@@ -1,0 +1,47 @@
+name: Generate Commits
+
+on:
+  workflow_dispatch: # Запуск вручную
+
+jobs:
+  generate-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Git
+        run: |
+          git config user.name "kirkiiruch"
+          git config user.email "kirillslyzhuck61@gmail.com"
+
+      - name: Generate commits on selected dates
+        run: |
+          SELECTED_DATES=(
+            "2024-01-01"
+            "2024-01-05"
+            "2024-02-14"
+            "2024-03-01"
+            "2024-12-25"
+          )
+
+          touch activity.txt
+
+          for current_date in "${SELECTED_DATES[@]}"; do
+            num_commits=$((RANDOM % 10 + 1))  # 🔥 от 1 до 10 коммитов
+            for ((i=1; i<=num_commits; i++)); do
+              hour=$(printf "%02d" $((RANDOM % 24)))
+              minute=$(printf "%02d" $((RANDOM % 60)))
+              second=$(printf "%02d" $((RANDOM % 60)))
+              commit_date="${current_date}T${hour}:${minute}:${second}"
+
+              echo "Commit $i for $commit_date" >> activity.txt
+
+              git add activity.txt
+              GIT_AUTHOR_DATE="$commit_date" GIT_COMMITTER_DATE="$commit_date" git commit --date="$commit_date" -m "Commit $i on $commit_date"
+            done
+          done
+
+      - name: Push changes
+        run: |
+          git push origin main
